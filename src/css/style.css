@@ -1,0 +1,6 @@
+html, body {
+  -webkit-touch-callout: none; /* Prevents callout menu on press & hold */
+  -webkit-user-select: none;   /* Prevents text selection highlight */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent; /* Removes box tap highlight */
+}

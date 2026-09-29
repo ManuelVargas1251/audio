@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEH</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #050508;
+      font-family: sans-serif;
+    }
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    .ui-overlay {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(15, 15, 25, 0.75);
+      padding: 12px 24px;
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    audio {
+      outline: none;
+    }
+  </style>
+
+  <!-- Import Map for Native Three.js ES Modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <div class="ui-overlay">
+    <audio id="audio-player" src="./src/audio/mp3/audio.k.1.mp3" controls></audio>
+  </div>
+
+  <script type="module" src="./src/js/main.js"></script>
+</body>
+</html>
