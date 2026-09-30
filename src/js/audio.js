@@ -29,5 +29,10 @@ export function createAudioController(audioElement) {
     return dataArray;
   }
 
-  return { init, getFrequencyData };
+  function getBinWidth() {
+    if (!audioCtx || !analyser) return 0;
+    return audioCtx.sampleRate / analyser.fftSize;
+  }
+
+  return { init, getFrequencyData, getBinWidth };
 }

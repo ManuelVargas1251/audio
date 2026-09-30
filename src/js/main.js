@@ -37,9 +37,9 @@ const rings = [];
 // Base Ring Geometry & Wireframe Material
 // Torus Arguments: (radius, tube, radialSegments, tubularSegments)
 // tube: original: 0.05; max: 5 or 50
-const ringGeometry = new THREE.TorusGeometry(3, 0.03, 33, 33); // 6 segments for hexagonal ring shape
+const ringGeometry = new THREE.TorusGeometry(3, 0.5, 33, 33); // 6 segments for hexagonal ring shape
 const ringMaterial = new THREE.MeshBasicMaterial({
-  color: 0x0099ff,
+  color: 0x00bb55,
   wireframe: true,
   transparent: true,
   opacity: 0.8
@@ -63,6 +63,25 @@ window.addEventListener('resize', () => {
 // --- Animation & Audio Reactor Loop ---
 const SPEED = 0.15;
 
+function frequencyToMidi(frequency) {
+  if (frequency <= 0) return 0;
+  return Math.round(69 + 12 * Math.log2(frequency / 440));
+}
+
+function getPitchColor(midiNote) {
+  if (midiNote <= 0) return { h: 0, s: 0, l: 0.2 };
+
+  const pitchClass = midiNote % 12;
+  const octave = Math.floor(midiNote / 12) - 1;
+  const normalizedOctave = Math.max(1, Math.min(8, octave));
+
+  return {
+    h: pitchClass / 12,
+    s: 1,
+    l: 0.2 + ((normalizedOctave - 1) / 7) * 0.6
+  };
+}
+
 function animate() {
   requestAnimationFrame(animate);
 
@@ -71,7 +90,7 @@ function animate() {
 
   rings.forEach((ring, index) => {
     // 1. Move rings toward the camera
-    ring.position.z += SPEED + bassVal * 0.1;
+    ring.position.z += SPEED + bassVal * 0.13;
 
     // 2. Loop ring back to far plane when it passes the camera
     if (ring.position.z > 2) {
@@ -79,18 +98,23 @@ function animate() {
     }
 
     // 3. Audio Reactivity (Scale & Color)
-    const binValue = freqData[index % freqData.length] || 0;
-    const normalizedFreq = binValue / 255;
+    const binIndex = index % freqData.length;
+    const binEnergy = (freqData[binIndex] || 0) / 255;
 
     // Scale ring based on its corresponding audio frequency bin
-    const scale = 1 + normalizedFreq * 1.2;
+    const scale = 1 + binEnergy * 1.2;
     ring.scale.set(scale, scale, scale);
 
     // Rotate individual ring sections
     ring.rotation.z += 0.005 + (index % 2 === 0 ? 0.005 : -0.005);
 
-    // Dynamic HSL Color Shift based on frequency energy
-    // ring.material.color.setHSL(0.45 + normalizedFreq * 0.3, 1.0, 0.5); //wip
+    if (binEnergy > 0.1) {
+      const frequency = binIndex * audioController.getBinWidth();
+      const { h, s, l } = getPitchColor(frequencyToMidi(frequency));
+      ring.material.color.setHSL(h, s, l * binEnergy);
+    } else {
+      ring.material.color.setHex(0x00bb55);
+    }
   });
 
   renderer.render(scene, camera);
