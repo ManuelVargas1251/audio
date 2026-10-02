@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CEH</title>
+  <title>Audio | K.113</title>
   <!-- Import CSS -->
   <link rel="stylesheet" href="./src/css/style.css">
 
@@ -20,8 +20,24 @@
 
   <div id="canvas-container"></div>
 
+  <div id="audio-hud" style="
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    color: #00ffcc;
+    font-family: monospace;
+    font-size: 13px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 10;
+  ">
+    Loudness: <span id="hud-loudness">0.00</span> | Min Cooldown: <span id="hud-timer">0s</span>
+  </div>
+
   <div class="ui-overlay">
-    <audio id="audio-player" src="./src/audio/mp3/audio.k.113.mp3" controls></audio>
+    <audio id="audio-player" src="./src/audio/mp3/audio.k.113.mp3" controls controlsList="nodownload noplaybackrate" oncontextmenu="return false;"></audio>
   </div>
 
   <script type="module" src="./src/js/main.js"></script>
