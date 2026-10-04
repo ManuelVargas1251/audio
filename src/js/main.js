@@ -96,6 +96,12 @@ const THEMES = {
 
 let currentTheme = THEMES.rainbow;
 let hueDriftOffset = 0;
+const transitionTheme = {
+  baseHue: 0.50,
+  sat: 1.00,
+  lightOffset: 0.0,
+  hueRange: 1.00
+};
 
 function getActiveTheme() {
   if (currentTheme.subs) {
@@ -155,8 +161,8 @@ function getPitchColor(midiNote) {
   const active = getActiveTheme();
 
   if (midiNote <= 0) {
-    const driftedBase = (active.baseHue + hueDriftOffset) % 1;
-    return { h: driftedBase, s: active.sat * 0.5, l: 0.12 };
+    const driftedBase = (transitionTheme.baseHue + hueDriftOffset) % 1;
+    return { h: driftedBase, s: transitionTheme.sat * 0.5, l: 0.12 };
   }
 
   const pitchClass = midiNote % 12;
@@ -168,15 +174,17 @@ function getPitchColor(midiNote) {
     hue = active.palette[colorIndex];
   } else {
     const normalizedPitch = pitchClass / 11;
-    const hueOffset = (normalizedPitch - 0.5) * active.hueRange;
-    hue = (active.baseHue + hueDriftOffset + hueOffset + 1) % 1;
+    const hueOffset = (normalizedPitch - 0.5) * transitionTheme.hueRange;
+    hue = (transitionTheme.baseHue + hueDriftOffset + hueOffset + 1) % 1;
   }
 
   const normalizedOctave = Math.max(1, Math.min(8, octave));
-  const offset = active.lightOffset || 0.0;
-  const lightness = Math.min(0.9, 0.22 + offset + ((normalizedOctave - 1) / 7) * 0.55);
+  const lightness = Math.min(
+    0.9,
+    0.22 + transitionTheme.lightOffset + ((normalizedOctave - 1) / 7) * 0.55
+  );
 
-  return { h: hue, s: active.sat, l: lightness };
+  return { h: hue, s: transitionTheme.sat, l: lightness };
 }
 
 function animate() {
@@ -184,6 +192,33 @@ function animate() {
 
   const activeTheme = getActiveTheme();
   hueDriftOffset = (hueDriftOffset + 0.0015) % 1;
+
+  const lerpFactor = 0.05;
+  transitionTheme.baseHue = THREE.MathUtils.lerp(
+    transitionTheme.baseHue,
+    activeTheme.baseHue,
+    lerpFactor
+  );
+  transitionTheme.sat = THREE.MathUtils.lerp(
+    transitionTheme.sat,
+    activeTheme.sat,
+    lerpFactor
+  );
+
+  const targetLightOffset = activeTheme.lightOffset || 0.0;
+  transitionTheme.lightOffset = THREE.MathUtils.lerp(
+    transitionTheme.lightOffset,
+    targetLightOffset,
+    lerpFactor
+  );
+
+  if (activeTheme.hueRange !== undefined) {
+    transitionTheme.hueRange = THREE.MathUtils.lerp(
+      transitionTheme.hueRange,
+      activeTheme.hueRange,
+      lerpFactor
+    );
+  }
 
   const freqData = audioController.getFrequencyData();
   const averageLoudness = freqData.length
@@ -227,7 +262,11 @@ function animate() {
       const { h, s, l } = getPitchColor(frequencyToMidi(frequency));
       targetColor.setHSL(h, s, l * binEnergy);
     } else {
-      targetColor.setHSL((activeTheme.baseHue + hueDriftOffset) % 1, activeTheme.sat * 0.5, 0.12);
+      targetColor.setHSL(
+        (transitionTheme.baseHue + hueDriftOffset) % 1,
+        transitionTheme.sat * 0.5,
+        0.12
+      );
     }
 
     ring.material.color.lerp(targetColor, 0.06);
